@@ -1,5 +1,6 @@
 var express = require('express'),
     mongoose = require('mongoose');
+    bodyParser = require('body-parser')
 
 
 var db = mongoose.connect('mongodb://localhost/bookAPI');
@@ -10,41 +11,56 @@ var app = express();
 
 var port = process.env.PORT || 3000;
 
+app.use(bodyParser.urlencoded({extended: true})); //bodyp loade, mira el body 
+app.use(bodyParser.json()); //parsea a json
+
 
 var bookRouter = express.Router();
 
 bookRouter.route('/Books')
-    .get(function(req,res){
-        Book.find(function(err, books){
+.post(function(req, res){
+    var book = new Book(req.body);
+
+    book.save();
+    console.log(book);
+    res.status(201).send(book);
+
+})
+    .get(function (req, res) {
+
+        var query = {};
+        if (req.query.genre) {
+            query.genre = req.query.genre
+        }
+        Book.find(query, function (err, books) {
             if (err)
-            console.log(err)
+                res.status(500).send(err);
             else
-            res.json(books);
+                res.json(books);
+        });
     });
-});
-//---------------------------------
-    /*bookRouter.route('/')
-    .post(function(req, res){
-        var book = new Book (req.body);
 
-        book.save();
+bookRouter.route('/Book/:bookId')
+    .get(function (req, res) {
 
-        res.status(201).send(book)
-    });*/
+        Book.findById(req.params.bookId, function (err, books) {
+            if (err)
+                res.status(500).send(err);
+            else
+                res.json(book);
+        });
+    });
 
-
-//nice try gila 
-//--------------------------------------
 
 app.use('/api', bookRouter);
 
 
 
-app.get('/', function(req, res){
+app.get('/', function (req, res) {
     res.send('Ola ke ase!');
 });
 
-app.listen(port, function(){
+app.listen(port, function () {
     console.log('Gulp running on  PORT: ' + port);
 });
 
