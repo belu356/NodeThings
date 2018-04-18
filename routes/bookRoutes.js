@@ -92,4 +92,3 @@ var routes = function (Book) {
 };
 
 module.exports = routes;
-;
